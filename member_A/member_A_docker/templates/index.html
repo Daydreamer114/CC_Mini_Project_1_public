@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Creator Cloud Studio</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f7f4ed;
+            --ink: #1d1d1d;
+            --card: #fffdf8;
+            --line: #d7cab4;
+            --accent: #1f5f5b;
+            --accent-soft: #dcefea;
+            --warn: #b7410e;
+        }
+        body {
+            margin: 0;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: radial-gradient(circle at top left, #fff9ef 0, var(--bg) 50%, #efe6d7 100%);
+            color: var(--ink);
+        }
+        .shell {
+            max-width: 860px;
+            margin: 48px auto;
+            padding: 24px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 18px 45px rgba(58, 42, 16, 0.08);
+        }
+        h1 { margin-top: 0; font-size: 2.4rem; letter-spacing: 0.02em; }
+        p.lead { margin-bottom: 24px; color: #4e4a42; line-height: 1.6; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; }
+        input, textarea {
+            width: 100%; box-sizing: border-box;
+            padding: 14px 16px; border-radius: 14px;
+            border: 1px solid var(--line); margin-bottom: 18px;
+            font: inherit; background: #fff;
+        }
+        input[type="file"] { padding: 10px 16px; }
+        textarea { min-height: 140px; resize: vertical; }
+        .error {
+            margin-bottom: 18px; padding: 12px 14px;
+            border-radius: 12px; background: #fde8e2; color: var(--warn);
+        }
+        button {
+            background: var(--accent); color: #fff; border: 0;
+            border-radius: 999px; padding: 14px 24px; font: inherit; cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .hint { margin-top: 18px; color: #6d675b; font-size: 0.95rem; }
+        .spinner {
+            display: none; margin-left: 12px;
+            border: 3px solid var(--line); border-top: 3px solid var(--accent);
+            border-radius: 50%; width: 22px; height: 22px;
+            animation: spin 0.8s linear infinite; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="card">
+            <h1>Creator Cloud Studio</h1>
+            <p class="lead">Submit an event poster request. The system stores the record, triggers background processing, and updates the final status when validation is complete.</p>
+
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <form id="submitForm" method="post" action="/submit" enctype="multipart/form-data">
+                <label for="title">Event title</label>
+                <input id="title" name="title"
+                       value="{{ form.get('title', '') }}"
+                       placeholder="Spring Launch Night">
+
+                <label for="description">Short description</label>
+                <textarea id="description" name="description"
+                          placeholder="Include at least 30 characters for a READY result.">{{ form.get('description', '') }}</textarea>
+
+                <label for="posterFilename">Poster image filename</label>
+                <input id="posterFilename" name="posterFilename"
+                       value="{{ form.get('posterFilename', '') }}"
+                       placeholder="launch-poster.jpg">
+
+                <label for="posterImage">Poster image file (optional)</label>
+                <input type="file" id="posterImage" name="posterImage" accept="image/jpeg,image/png">
+
+                <button type="submit" id="submitBtn">Submit Poster</button>
+                <span class="spinner" id="spinner"></span>
+            </form>
+
+            <p class="hint">Allowed poster filename endings: <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>.</p>
+        </section>
+    </main>
+    <script>
+        document.getElementById('posterImage').addEventListener('change', function() {
+            var filenameInput = document.getElementById('posterFilename');
+            if (this.files && this.files.length > 0) {
+                filenameInput.value = this.files[0].name;
+            } else {
+                filenameInput.value = '';
+            }
+        });
+
+        document.getElementById('submitForm').addEventListener('submit', function() {
+            var btn = document.getElementById('submitBtn');
+            var spinner = document.getElementById('spinner');
+            spinner.style.display = 'inline-block';
+            this.querySelectorAll('input:not([type="file"]):not([type="submit"]), textarea')
+                .forEach(function(el) { el.readOnly = true; });
+            this.querySelectorAll('input[type="file"]')
+                .forEach(function(el) { el.style.pointerEvents = 'none'; el.tabIndex = -1; });
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+        });
+    </script>
+</body>
+</html>

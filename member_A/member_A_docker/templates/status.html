@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Submission Status</title>
+    {% if auto_refresh %}
+    {% endif %}
+    <style>
+        :root {
+            --bg: #f4efe6;
+            --card: #fffdf8;
+            --line: #d9ccb8;
+            --ink: #1d1d1d;
+            --processing: #d4a017;
+            --ready: #2e6f40;
+            --revision: #b05a24;
+            --incomplete: #8f1d1d;
+        }
+        body {
+            margin: 0;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f9f2e5 0%, var(--bg) 60%, #e6ddd0 100%);
+            color: var(--ink);
+        }
+        .shell { max-width: 860px; margin: 48px auto; padding: 24px; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 18px 45px rgba(58, 42, 16, 0.09);
+        }
+        .pill {
+            display: inline-block; border-radius: 999px;
+            padding: 10px 16px; font-weight: 700;
+            margin-bottom: 22px; color: #fff;
+        }
+        .pill.processing { background: var(--processing); }
+        .pill.ready     { background: var(--ready); }
+        .pill.revision  { background: var(--revision); }
+        .pill.incomplete { background: var(--incomplete); }
+        dl { display: grid; grid-template-columns: 180px 1fr; gap: 10px 14px; }
+        dt { font-weight: 700; }
+        dd { margin: 0; }
+        .note {
+            margin-top: 24px; padding: 16px 18px;
+            border-radius: 16px; background: #f5efe3;
+            border: 1px solid var(--line); line-height: 1.6;
+        }
+        .poster-section {
+            margin-top: 24px; padding: 16px 18px;
+            border-radius: 16px; background: #f5efe3;
+            border: 1px solid var(--line); text-align: center;
+        }
+        .poster-section img {
+            max-width: 100%; max-height: 400px;
+            border-radius: 12px;
+        }
+        .poster-placeholder {
+            color: #6d675b; font-style: italic;
+        }
+        a { display: inline-block; margin-top: 24px; color: #1f5f5b; }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="card">
+            <div class="pill {{ status_class }}">{{ record.status }}</div>
+            <h1>Submission Status</h1>
+            <dl>
+                <dt>Submission ID</dt>
+                <dd>{{ record.id }}</dd>
+                <dt>Title</dt>
+                <dd>{{ record.title or 'Not provided' }}</dd>
+                <dt>Description</dt>
+                <dd>{{ record.description or 'Not provided' }}</dd>
+                <dt>Poster filename</dt>
+                <dd>{{ record.posterFilename or 'Not provided' }}</dd>
+                <dt>Created at</dt>
+                <dd>{{ record.createdAt }}</dd>
+                <dt>Updated at</dt>
+                <dd>{{ record.updatedAt }}</dd>
+            </dl>
+            <div class="note">
+                <strong>Note:</strong> {{ display_note }}
+            </div>
+            {% if record.posterSize is not none %}
+            <div class="poster-section">
+                <img src="/submission/{{ record.id }}/poster" alt="Poster image">
+            </div>
+            {% else %}
+            <div class="poster-section">
+                <span class="poster-placeholder">No poster image uploaded.</span>
+            </div>
+            {% endif %}
+            {% if auto_refresh %}
+            <p id="refresh-hint">Background processing is still running. This page refreshes automatically every 3 seconds.</p>
+            <p id="timeout-msg" style="display:none;color:#b05a24;">Processing takes longer than expected. <a href="javascript:sessionStorage.removeItem('poll_count');location.reload();">Refresh</a> or <a href="/">submit again</a>.</p>
+            {% endif %}
+            <a href="/">Submit another poster</a>
+        </section>
+    </main>
+    {% if auto_refresh %}
+    <script>
+        var count = parseInt(sessionStorage.getItem('poll_count')) || 0;
+        count++;
+        sessionStorage.setItem('poll_count', count);
+        if (count >= 10) {
+            document.getElementById('timeout-msg').style.display = 'block';
+            document.getElementById('refresh-hint').style.display = 'none';
+        } else {
+            setTimeout(function() { location.reload(); }, 3000);
+        }
+    </script>
+    {% endif %}
+</body>
+</html>
